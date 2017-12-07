@@ -155,9 +155,31 @@ public class Wizard8 extends javax.swing.JFrame {
             
             String technique = dialogFactory.optionDialog(this,"Select the technique to add", techniques, techniques[0].toString());
             
-            System.out.println(technique);
-            
+            JSONObject parameterList = (JSONObject) techniquesList.get(technique);
 
+            Object[] parameters = parameterList.keySet().toArray();
+            Technique tec = new Technique(technique);
+            for (Object parameter:parameters){
+                
+                JSONArray typeHelpDefault = (JSONArray) parameterList.get(parameter.toString());
+                
+                String type = typeHelpDefault.get(0).toString();
+                String help = typeHelpDefault.get(1).toString();
+               
+                String value="";
+                if (type.equals("int") ||type.equals("string") ){
+                    value = dialogFactory.inputDialog(this, help, typeHelpDefault.get(2).toString());
+                }
+                if (type.equals("option") ){                    
+                    value = dialogFactory.optionDialog(this, help,(Object[])typeHelpDefault.get(2),typeHelpDefault.get(3).toString());
+                }
+               
+                tec.addParameters(parameter.toString(), value);    
+            
+            }
+            
+        
+            
             
 
         } catch (Exception ex) {
