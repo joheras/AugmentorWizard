@@ -35,7 +35,7 @@ public class dialogFactory {
         return selection;
     }
     
-    public static String optionDialog(javax.swing.JFrame dialog, String help, String[] options,String defaultValue) {
+    public static String optionDialog(javax.swing.JFrame dialog, String help, Object[] options,String defaultValue) {
         String selection =  (String) JOptionPane.showInputDialog(dialog, help,"",JOptionPane.DEFAULT_OPTION,null,options,defaultValue);
         return selection;
     }
