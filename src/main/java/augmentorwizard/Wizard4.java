@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.mycompany.augmentorwizard;
+package augmentorwizard;
 
 import java.io.FileReader;
 import java.util.logging.Level;
@@ -15,14 +15,14 @@ import org.json.simple.parser.JSONParser;
  *
  * @author joheras
  */
-public class Wizard5 extends javax.swing.JFrame {
+public class Wizard4 extends javax.swing.JFrame {
 
     /**
      * Creates new form Wizard3
      */
     ProblemConfiguration pc;
 
-    public Wizard5(ProblemConfiguration pc) {
+    public Wizard4(ProblemConfiguration pc) {
         initComponents();
         this.pc = pc;
 
@@ -34,12 +34,11 @@ public class Wizard5 extends javax.swing.JFrame {
             JSONObject problemsList = (JSONObject) jsonObject.get("problems");
             JSONObject annotationList = (JSONObject) problemsList.get(pc.getProblem());
             JSONObject outputList = (JSONObject) annotationList.get(pc.getAnnotationMode());
-            JSONObject generationList = (JSONObject) outputList.get(pc.getOutputMode());
 
-            Object[] generations = generationList.keySet().toArray();
+            Object[] outputs = outputList.keySet().toArray();
 
-            for (Object generation : generations) {
-                jComboBox1.addItem(generation.toString());
+            for (Object output : outputs) {
+                jComboBox1.addItem(output.toString());
             }
             jComboBox1.setSelectedIndex(0);
 
@@ -66,7 +65,7 @@ public class Wizard5 extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
 
-        jLabel1.setText("Select the generation mode:");
+        jLabel1.setText("Select the output mode:");
 
         jButton1.setText("Next >");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -91,7 +90,7 @@ public class Wizard5 extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
-                        .addGap(0, 189, Short.MAX_VALUE))
+                        .addGap(0, 214, Short.MAX_VALUE))
                     .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
@@ -118,17 +117,17 @@ public class Wizard5 extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        Wizard4 w4 = new Wizard4(pc);
+        Wizard3 w3 = new Wizard3(pc);
         this.dispose();
-        w4.setVisible(true);
+        w3.setVisible(true);
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        String generation = (String) jComboBox1.getSelectedItem();
-        pc.setGenerationMode(generation);
-        Wizard6 w6 = new Wizard6(pc);
+        String output = (String) jComboBox1.getSelectedItem();
+        pc.setOutputMode(output);
+        Wizard5 w5 = new Wizard5(pc);
         this.dispose();
-        w6.setVisible(true);
+        w5.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
 

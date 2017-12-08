@@ -3,15 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.mycompany.augmentorwizard;
+package augmentorwizard;
 
-import java.io.File;
 import java.io.FileReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -19,16 +15,35 @@ import org.json.simple.parser.JSONParser;
  *
  * @author joheras
  */
-public class Wizard7 extends javax.swing.JFrame {
+public class Wizard3 extends javax.swing.JFrame {
 
     /**
      * Creates new form Wizard3
      */
     ProblemConfiguration pc;
 
-    public Wizard7(ProblemConfiguration pc) {
+    public Wizard3(ProblemConfiguration pc) {
         initComponents();
         this.pc = pc;
+
+        JSONParser parser = new JSONParser();
+
+        try {
+            Object obj = parser.parse(new FileReader(System.getProperty("user.dir") + "/configuration.json"));
+            JSONObject jsonObject = (JSONObject) obj;
+            JSONObject problemsList = (JSONObject) jsonObject.get("problems");
+            JSONObject annotationList = (JSONObject) problemsList.get(pc.getProblem());
+
+            Object[] annotations = annotationList.keySet().toArray();
+
+            for (Object annotation : annotations) {
+                jComboBox1.addItem(annotation.toString());
+            }
+            jComboBox1.setSelectedIndex(0);
+
+        } catch (Exception ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
     }
 
@@ -42,13 +57,14 @@ public class Wizard7 extends javax.swing.JFrame {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
+        jComboBox1 = new javax.swing.JComboBox<>();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
 
-        jLabel1.setText("Fix some parameters by pressing the Next button");
+        jLabel1.setText("Select the annotation mode:");
 
         jButton1.setText("Next >");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -73,7 +89,8 @@ public class Wizard7 extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
-                        .addGap(0, 51, Short.MAX_VALUE))
+                        .addGap(0, 188, Short.MAX_VALUE))
+                    .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(jButton2)
@@ -86,7 +103,9 @@ public class Wizard7 extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 234, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 195, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2))
@@ -97,62 +116,24 @@ public class Wizard7 extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        Wizard6 w6 = new Wizard6(pc);
+        Wizard2 w2 = new Wizard2();
         this.dispose();
-        w6.setVisible(true);
+        w2.setVisible(true);
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-
-        JSONParser parser = new JSONParser();
-
-        try {
-            Object obj = parser.parse(new FileReader(System.getProperty("user.dir") + "/configuration.json"));
-            JSONObject jsonObject = (JSONObject) obj;
-            JSONObject problemsList = (JSONObject) jsonObject.get("problems");
-            JSONObject annotationList = (JSONObject) problemsList.get(pc.getProblem());
-            JSONObject outputList = (JSONObject) annotationList.get(pc.getAnnotationMode());
-            JSONObject generationList = (JSONObject) outputList.get(pc.getOutputMode());
-            JSONObject parameterList = (JSONObject) generationList.get(pc.getGenerationMode());
-
-            Object[] parameters = parameterList.keySet().toArray();
-
-            for (Object parameter:parameters){
-                
-                JSONArray typeAndHelp = (JSONArray) parameterList.get(parameter.toString());
-                
-                String type = typeAndHelp.get(0).toString();
-                String help = typeAndHelp.get(1).toString();
-                String value="";
-                if (type.equals("path")){
-                    value = dialogFactory.pathDialog(this, help);
-                }
-                if (type.equals("int") ||type.equals("string") ){
-                    value = dialogFactory.inputDialog(this, help,"");
-                }
-               
-                pc.addParameter(parameter.toString(), value);
-            
-            
-            }
-            
-            Wizard8 w8 = new Wizard8(pc);
-            this.dispose();
-            w8.setVisible(true);
-            
-            
-            
-            
-        } catch (Exception ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
+        String annotation = (String) jComboBox1.getSelectedItem();
+        pc.setAnnotationMode(annotation);
+        Wizard4 w4 = new Wizard4(pc);
+        this.dispose();
+        w4.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 

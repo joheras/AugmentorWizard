@@ -1,27 +1,30 @@
-package com.mycompany.augmentorwizard;
-
-import java.io.FileReader;
-import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+package augmentorwizard;
+
+import java.io.FileReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 /**
  *
  * @author joheras
  */
-public class Wizard2 extends javax.swing.JFrame {
+public class Wizard5 extends javax.swing.JFrame {
 
-    ProblemConfiguration pc = new ProblemConfiguration();
-    public Wizard2() {
+    /**
+     * Creates new form Wizard3
+     */
+    ProblemConfiguration pc;
+
+    public Wizard5(ProblemConfiguration pc) {
         initComponents();
-
+        this.pc = pc;
 
         JSONParser parser = new JSONParser();
 
@@ -29,11 +32,14 @@ public class Wizard2 extends javax.swing.JFrame {
             Object obj = parser.parse(new FileReader(System.getProperty("user.dir") + "/configuration.json"));
             JSONObject jsonObject = (JSONObject) obj;
             JSONObject problemsList = (JSONObject) jsonObject.get("problems");
+            JSONObject annotationList = (JSONObject) problemsList.get(pc.getProblem());
+            JSONObject outputList = (JSONObject) annotationList.get(pc.getAnnotationMode());
+            JSONObject generationList = (JSONObject) outputList.get(pc.getOutputMode());
 
-            Object[] problems =  problemsList.keySet().toArray();
+            Object[] generations = generationList.keySet().toArray();
 
-            for (Object problem: problems) {
-                jComboBox1.addItem(problem.toString());
+            for (Object generation : generations) {
+                jComboBox1.addItem(generation.toString());
             }
             jComboBox1.setSelectedIndex(0);
 
@@ -55,16 +61,24 @@ public class Wizard2 extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jComboBox1 = new javax.swing.JComboBox<>();
         jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
 
-        jLabel1.setText("Select the kind of problem you are working with:");
+        jLabel1.setText("Select the generation mode:");
 
         jButton1.setText("Next >");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
+            }
+        });
+
+        jButton2.setText("< Back");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
             }
         });
 
@@ -77,10 +91,12 @@ public class Wizard2 extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
-                        .addGap(0, 55, Short.MAX_VALUE))
+                        .addGap(0, 189, Short.MAX_VALUE))
                     .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jButton2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton1)))
                 .addContainerGap())
         );
@@ -92,60 +108,35 @@ public class Wizard2 extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 195, Short.MAX_VALUE)
-                .addComponent(jButton1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1)
+                    .addComponent(jButton2))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-       
-        String problem = (String)jComboBox1.getSelectedItem();
-        pc.setProblem(problem);
-        Wizard3 w3 = new Wizard3(pc);
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        Wizard4 w4 = new Wizard4(pc);
         this.dispose();
-        w3.setVisible(true);
+        w4.setVisible(true);
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        String generation = (String) jComboBox1.getSelectedItem();
+        pc.setGenerationMode(generation);
+        Wizard6 w6 = new Wizard6(pc);
+        this.dispose();
+        w6.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Wizard2.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Wizard2.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Wizard2.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Wizard2.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Wizard2().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
+
 }

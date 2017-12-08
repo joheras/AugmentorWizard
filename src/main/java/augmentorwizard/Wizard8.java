@@ -3,14 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.mycompany.augmentorwizard;
+package augmentorwizard;
 
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -30,7 +33,8 @@ public class Wizard8 extends javax.swing.JFrame {
     public Wizard8(ProblemConfiguration pc) {
         initComponents();
         this.pc = pc;
-        
+        DefaultListModel listModel = new DefaultListModel();
+        jList1.setModel(listModel);
 
     }
 
@@ -80,6 +84,11 @@ public class Wizard8 extends javax.swing.JFrame {
         });
 
         jButton4.setText("Remove");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -134,65 +143,80 @@ public class Wizard8 extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        DefaultListModel listModel = (DefaultListModel) jList1.getModel();
+        ArrayList<Technique> techs = new ArrayList<>();
+
+        for (int i = 0; i < listModel.size(); i++) {
+            techs.add((Technique) listModel.get(i));
+        }
+        pc.setTechniques(techs);
+
+        Wizard9 w9 = new Wizard9(pc);
+        this.dispose();
+        w9.setVisible(true);
 
 
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-       
-        
-        
+
         JSONParser parser = new JSONParser();
 
         try {
             Object obj = parser.parse(new FileReader(System.getProperty("user.dir") + "/configuration.json"));
             JSONObject jsonObject = (JSONObject) obj;
             JSONObject techniquesList = (JSONObject) jsonObject.get("techniques");
-            
 
             Object[] techniques = techniquesList.keySet().toArray();
             Arrays.sort(techniques);
-            
-            String technique = dialogFactory.optionDialog(this,"Select the technique to add", techniques, techniques[0].toString());
-            
+
+            String technique = dialogFactory.optionDialog(this, "Select the technique to add", techniques, techniques[0].toString());
+
             JSONObject parameterList = (JSONObject) techniquesList.get(technique);
 
             Object[] parameters = parameterList.keySet().toArray();
             Technique tec = new Technique(technique);
-            for (Object parameter:parameters){
-                
+            for (Object parameter : parameters) {
+
                 JSONArray typeHelpDefault = (JSONArray) parameterList.get(parameter.toString());
-                
+
                 String type = typeHelpDefault.get(0).toString();
                 String help = typeHelpDefault.get(1).toString();
-               
-                String value="";
-                if (type.equals("int") ||type.equals("string") ){
+
+                String value = "";
+                if (type.equals("int") || type.equals("string")) {
                     value = dialogFactory.inputDialog(this, help, typeHelpDefault.get(2).toString());
                 }
-                if (type.equals("option") ){                    
-                    value = dialogFactory.optionDialog(this, help,(Object[])typeHelpDefault.get(2),typeHelpDefault.get(3).toString());
+                if (type.equals("option")) {
+                    JSONArray options = (JSONArray)typeHelpDefault.get(2);
+                    
+                    
+                    value = dialogFactory.optionDialog(this, help, options.toArray(), typeHelpDefault.get(3).toString());
                 }
-               
-                tec.addParameters(parameter.toString(), value);    
-            
+
+                tec.addParameters(parameter.toString(), value);
+
             }
-            
-        
-            
-            
+
+            DefaultListModel listModel = (DefaultListModel) jList1.getModel();
+            listModel.addElement(tec);
 
         } catch (Exception ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        
-        
-        
-        
-        
-        
+
+
     }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        DefaultListModel listModel = (DefaultListModel) jList1.getModel();
+        int[] indices = jList1.getSelectedIndices();
+        for (int i = indices.length; i > 0; i--) {
+            listModel.remove(indices[i - 1]);
+        }
+
+
+    }//GEN-LAST:event_jButton4ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -205,8 +229,6 @@ public class Wizard8 extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 
-    
-    
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">

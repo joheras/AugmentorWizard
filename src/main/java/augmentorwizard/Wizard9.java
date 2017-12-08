@@ -3,11 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.mycompany.augmentorwizard;
+package augmentorwizard;
 
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -15,36 +23,17 @@ import org.json.simple.parser.JSONParser;
  *
  * @author joheras
  */
-public class Wizard3 extends javax.swing.JFrame {
+public class Wizard9 extends javax.swing.JFrame {
 
     /**
      * Creates new form Wizard3
      */
     ProblemConfiguration pc;
 
-    public Wizard3(ProblemConfiguration pc) {
+    public Wizard9(ProblemConfiguration pc) {
         initComponents();
         this.pc = pc;
-
-        JSONParser parser = new JSONParser();
-
-        try {
-            Object obj = parser.parse(new FileReader(System.getProperty("user.dir") + "/configuration.json"));
-            JSONObject jsonObject = (JSONObject) obj;
-            JSONObject problemsList = (JSONObject) jsonObject.get("problems");
-            JSONObject annotationList = (JSONObject) problemsList.get(pc.getProblem());
-
-            Object[] annotations = annotationList.keySet().toArray();
-
-            for (Object annotation : annotations) {
-                jComboBox1.addItem(annotation.toString());
-            }
-            jComboBox1.setSelectedIndex(0);
-
-        } catch (Exception ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
+        jTextArea1.setText(pc.toString());
     }
 
     /**
@@ -57,16 +46,17 @@ public class Wizard3 extends javax.swing.JFrame {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
 
-        jLabel1.setText("Select the annotation mode:");
+        jLabel1.setText("Summary:");
 
-        jButton1.setText("Next >");
+        jButton1.setText("Finish");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -80,6 +70,11 @@ public class Wizard3 extends javax.swing.JFrame {
             }
         });
 
+        jTextArea1.setEditable(false);
+        jTextArea1.setColumns(20);
+        jTextArea1.setRows(5);
+        jScrollPane1.setViewportView(jTextArea1);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -87,15 +82,15 @@ public class Wizard3 extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addGap(0, 188, Short.MAX_VALUE))
-                    .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGap(0, 277, Short.MAX_VALUE)
                         .addComponent(jButton2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1)))
+                        .addComponent(jButton1))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -103,9 +98,9 @@ public class Wizard3 extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 195, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2))
@@ -116,25 +111,49 @@ public class Wizard3 extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        Wizard2 w2 = new Wizard2();
+        Wizard8 w8 = new Wizard8(pc);
         this.dispose();
-        w2.setVisible(true);
+        w8.setVisible(true);
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        String annotation = (String) jComboBox1.getSelectedItem();
-        pc.setAnnotationMode(annotation);
-        Wizard4 w4 = new Wizard4(pc);
-        this.dispose();
-        w4.setVisible(true);
+
+        JSONObject json = pc.generateJSON();
+        JFileChooser fc = new JFileChooser();
+        fc.setCurrentDirectory(new java.io.File(".")); // start at application current directory
+        fc.setDialogTitle("Indicate the path where the json file will be saved");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON files", "json");
+        for(FileFilter f:fc.getChoosableFileFilters()){
+            fc.removeChoosableFileFilter(f);
+        }
+        fc.addChoosableFileFilter(filter);
+        int returnVal = fc.showSaveDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File yourfile = fc.getSelectedFile();
+        try (FileWriter file = new FileWriter(yourfile.getAbsolutePath()+".json")) {
+            file.write(json.toJSONString());
+            System.out.println("Successfully Copied JSON Object to File...");
+            System.out.println("\nJSON Object: " + json);
+        } catch (IOException ex) {
+            Logger.getLogger(Wizard9.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        } else {
+            return ;
+        }
+
+        System.out.println(json.toString());
+
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
 
 }
