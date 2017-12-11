@@ -6,19 +6,29 @@
 package augmentorwizard;
 
 import com.cedarsoftware.util.io.JsonWriter;
+import java.awt.BorderLayout;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.filechooser.FileSystemView;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -34,7 +44,9 @@ public class Wizard9 extends javax.swing.JFrame {
     public Wizard9(ProblemConfiguration pc) {
         initComponents();
         this.pc = pc;
-        jTextArea1.setText(pc.toString());
+        if (pc != null) {
+            jTextArea1.setText(pc.toString());
+        }
     }
 
     /**
@@ -81,6 +93,11 @@ public class Wizard9 extends javax.swing.JFrame {
 
         jButton3.setText("Preview");
         jButton3.setToolTipText("Preview data augmentationi with one example");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
 
         jButton4.setText("Save");
         jButton4.setToolTipText("Save the configuration file");
@@ -138,41 +155,176 @@ public class Wizard9 extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
 
+        try {                                         
+            
+            FileWriter file = null;
+            
+            JSONParser parser = new JSONParser();
+            
+            Object obj = parser.parse(new FileReader(System.getProperty("user.dir") + "/python_config.json"));
+            JSONObject jsonObject = (JSONObject) obj;
+            String pythonScript = (String) jsonObject.get("scripPythonPath");
+            String virtualenv = (String) jsonObject.get("virtualenv");
+            
+            JSONObject json = pc.generateJSON();
+            String niceFormattedJson = JsonWriter.formatJson(json.toString());
+            
+            file = new FileWriter(System.getProperty("user.dir") + "/temp.json");
+            file.write(niceFormattedJson);
+            file.close();
+            
+            final JDialog loading = new JDialog(this);
+            JPanel p1 = new JPanel(new BorderLayout());
+            p1.add(new JLabel("Please wait..."), BorderLayout.CENTER);
+            loading.setUndecorated(true);
+            loading.getContentPane().add(p1);
+            loading.pack();
+            loading.setLocationRelativeTo(this);
+            loading.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+            loading.setModal(true);
+            
+            SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
+                @Override
+                protected String doInBackground() throws InterruptedException, IOException {
+                    Runtime rt = Runtime.getRuntime();
+                    String command = "source " + virtualenv + "; python " + pythonScript + "/augment.py -c "
+                            + System.getProperty("user.dir") + "/temp.json";
+                    Process pr = new ProcessBuilder("bash", "-c", command).start();
+                    BufferedReader input = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+                    String line = input.readLine();
+                    
+                    while ((line = input.readLine()) != null) {
+                        
+                    }
+                    return "done";
+                }
+
+                @Override
+                protected void done() {
+                    loading.dispose();
+                }
+            };
+            worker.execute();
+            loading.setVisible(true);
+            
+            try {
+                worker.get();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+            
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Wizard9.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Wizard9.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ParseException ex) {
+            Logger.getLogger(Wizard9.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
 
-        
         JSONObject json = pc.generateJSON();
         String niceFormattedJson = JsonWriter.formatJson(json.toString());
         JFileChooser fc = new JFileChooser();
         fc.setCurrentDirectory(new java.io.File(".")); // start at application current directory
         fc.setDialogTitle("Indicate the path where the json file will be saved");
         FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON files", "json");
-        for(FileFilter f:fc.getChoosableFileFilters()){
+        for (FileFilter f : fc.getChoosableFileFilters()) {
             fc.removeChoosableFileFilter(f);
         }
         fc.addChoosableFileFilter(filter);
         int returnVal = fc.showSaveDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File yourfile = fc.getSelectedFile();
-        try (FileWriter file = new FileWriter(yourfile.getAbsolutePath()+".json")) {
-            file.write(niceFormattedJson);
-            System.out.println("Successfully Copied JSON Object to File...");
-            System.out.println("\nJSON Object: " + json);
-        } catch (IOException ex) {
-            Logger.getLogger(Wizard9.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
+            try (FileWriter file = new FileWriter(yourfile.getAbsolutePath() + ".json")) {
+                file.write(niceFormattedJson);
+                System.out.println("Successfully Copied JSON Object to File...");
+                System.out.println("\nJSON Object: " + json);
+
+            } catch (IOException ex) {
+                Logger.getLogger(Wizard9.class
+                        .getName()).log(Level.SEVERE, null, ex);
+            }
+
         } else {
-            return ;
+            return;
         }
 
         System.out.println(json.toString());
 
 
-        
     }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+
+        FileWriter file = null;
+        try {
+
+            JSONParser parser = new JSONParser();
+
+            Object obj = parser.parse(new FileReader(System.getProperty("user.dir") + "/python_config.json"));
+            JSONObject jsonObject = (JSONObject) obj;
+            String pythonScript = (String) jsonObject.get("scripPythonPath");
+            String virtualenv = (String) jsonObject.get("virtualenv");
+
+            JSONObject json = pc.generateJSON();
+            String niceFormattedJson = JsonWriter.formatJson(json.toString());
+            file = new FileWriter(System.getProperty("user.dir") + "/temp.json");
+            file.write(niceFormattedJson);
+            file.close();
+            JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+            jfc.setDialogTitle("Select an image");
+            jfc.setAcceptAllFileFilterUsed(false);
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Images", "png", "gif", "jpg", "tiff", "tif");
+            jfc.addChoosableFileFilter(filter);
+
+            int returnValue = jfc.showOpenDialog(null);
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                try {
+                    File image = jfc.getSelectedFile();
+                    String imagePath = image.getAbsolutePath();
+                    Runtime rt = Runtime.getRuntime();
+                    String command = "source " + virtualenv + "; python " + pythonScript + "/generate_sample.py -c "
+                            + System.getProperty("user.dir") + "/temp.json"
+                            + " -i " + imagePath;
+                    Process pr = new ProcessBuilder("bash", "-c", command).start();
+                    BufferedReader input = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+                    String line = input.readLine();
+
+                    while ((line = input.readLine()) != null) {
+
+                    }
+
+                } catch (IOException ex) {
+                    Logger.getLogger(Wizard9.class
+                            .getName()).log(Level.SEVERE, null, ex);
+                }
+
+            } else {
+                return;
+
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Wizard9.class
+                    .getName()).log(Level.SEVERE, null, ex);
+
+        } catch (ParseException ex) {
+            Logger.getLogger(Wizard9.class
+                    .getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                file.close();
+
+            } catch (IOException ex) {
+                Logger.getLogger(Wizard9.class
+                        .getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+
+    }//GEN-LAST:event_jButton3ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -185,4 +337,43 @@ public class Wizard9 extends javax.swing.JFrame {
     private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
 
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Wizard1.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Wizard1.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Wizard1.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Wizard1.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Wizard9(null).setVisible(true);
+            }
+        });
+    }
 }

@@ -125,6 +125,7 @@ public class Wizard7 extends javax.swing.JFrame {
                 String value="";
                 if (type.equals("path")){
                     value = dialogFactory.pathDialog(this, help);
+                    value = value + "/";
                 }
                 if (type.equals("int") ||type.equals("string") ){
                     value = dialogFactory.inputDialog(this, help,"");
